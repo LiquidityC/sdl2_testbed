@@ -8,27 +8,24 @@ set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=address -fn
 
 # Modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
-include(FindSDL2)
-include(ClangFormat)
+
+if (LOCAL_SDL)
+	message("Using local SDL library")
+	add_subdirectory(SDL)
+	add_definitions(-DSDL_NEXT)
+	set(SDL_LIBRARIES SDL3 SDL3_Headers)
+else ()
+	message("Using system installed SDL library")
+	include(FindSDL2)
+	set(SDL_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS})
+	set(SDL_LIBRARIES ${SDL2_LIBRARIES})
+endif ()
 
 # Environment defines
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
 	set(DEBUG 1)
 endif ()
 
-add_executable(${PROJECT_NAME}
-	src/main.c
-	)
-
-target_include_directories(${PROJECT_NAME}
-	PRIVATE
-	inc
-	${SDL2_INCLUDE_DIRS}
-	${CMAKE_CURRENT_BINARY_DIR}/include
-	)
-
-target_clangformat_setup(${PROJECT_NAME})
-
-target_link_libraries(${PROJECT_NAME}
-	${SDL2_LIBRARIES}
-	)
+add_executable(window_events src/window_events.c)
+target_include_directories(window_events PRIVATE ${SDL_INCLUDE_DIRS})
+target_link_libraries(window_events ${SDL_LIBRARIES})

@@ -7,7 +7,7 @@ clean:
 .PHONY: clean
 
 run: all
-	@./build/testbed
+	@./build/window_events
 
 setup:
 	@mkdir -p build
