@@ -1,0 +1,11 @@
+# For format see editorconfig.org
+# Copyright 2022 Collabora Ltd.
+# SPDX-License-Identifier: Zlib
+
+root = true
+
+[*.{c,h}]
+indent_size = 4
+indent_style = tab
+insert_final_newline = true
+trim_trailing_whitespace = true
