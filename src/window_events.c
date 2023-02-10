@@ -1,3 +1,6 @@
+/**
+ * An SDL app used for testing SDL_WINDOWEVENT occurences
+ */
 #include <stdio.h>
 
 #include "SDL.h"
