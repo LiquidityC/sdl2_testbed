@@ -10,6 +10,15 @@
 #include "SDL_video.h"
 
 #ifdef SDL_NEXT
+
+#undef SDL_WINDOWEVENT_ENTER
+#undef SDL_WINDOWEVENT_LEAVE
+#undef SDL_WINDOWEVENT_FOCUS_GAINED
+#undef SDL_WINDOWEVENT_FOCUS_LOST
+#undef SDL_WINDOWEVENT
+#undef SDL_DROPFILE
+#undef SDL_QUIT
+
 #define SDL_WINDOWEVENT_ENTER SDL_EVENT_WINDOW_MOUSE_ENTER
 #define SDL_WINDOWEVENT_LEAVE SDL_EVENT_WINDOW_MOUSE_LEAVE
 #define SDL_WINDOWEVENT_FOCUS_GAINED SDL_EVENT_WINDOW_FOCUS_GAINED
@@ -92,12 +101,17 @@ main(int argc, char **argv)
 		goto out;
 	}
 
+#ifndef SDL_NEXT
 	window = SDL_CreateWindow("Testbed", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, 0);
+#else
+	window = SDL_CreateWindow("Testbed", 800, 600, 0);
+#endif
 	if (!window) {
 		printf("Err: %s\n", SDL_GetError());
 		result = -1;
 		goto clean;
 	}
+
 
 	renderer = SDL_CreateRenderer(window, 0, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if (!renderer) {
