@@ -6,21 +6,18 @@ project(testbed LANGUAGES C VERSION 0.1.0)
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall -fsanitize=address -fno-omit-frame-pointer")
 set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=address -fno-omit-frame-pointer")
 
-# Disable some warnings
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wno-macro-redefined")
-
 # Modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 if (GIT_SDL)
 	message("Using GIT SDL library")
 	add_subdirectory(SDL)
-	add_definitions(-DSDL_NEXT)
+	add_definitions(-DSDL_NEXT -DSDL_GIT)
 	set(SDL_LIBRARIES SDL3-shared SDL3_Headers)
 elseif (LOCAL_SDL)
 	message("Using local SDL library")
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../SDL ${CMAKE_CURRENT_BINARY_DIR}/SDL_LOCAL)
-	add_definitions(-DSDL_NEXT)
+	add_definitions(-DSDL_NEXT -DSDL_LOCAL)
 	set(SDL_LIBRARIES SDL3-shared SDL3_Headers)
 else ()
 	message("Using system installed SDL library")
