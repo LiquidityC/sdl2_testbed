@@ -36,34 +36,67 @@ static const char *mime_types[] = {
 	NULL
 };
 
+typedef struct ClipboardData {
+	void *jpeg_data;
+	void *bmp_data;
+	size_t jpeg_len;
+	size_t bmp_len;
+} ClipboardData;
+
+static void destroy_clipboard_data(ClipboardData *cd)
+{
+	if (cd != NULL) {
+		if (cd->bmp_data != NULL)
+			SDL_free(cd->bmp_data);
+		if (cd->jpeg_data != NULL)
+			SDL_free(cd->jpeg_data);
+		SDL_free(cd);
+	}
+}
+
 void *callback_func(size_t *length, const char *mime_type, void *userdata)
 {
 	Uint8 buf[BUF_SIZE];
 	void *data = NULL;
-	FILE *fp;
+	FILE *fp = NULL;
 	*length = 0;
+	ClipboardData *cd = userdata;
 
 	printf("Mime-type: %s requested\n", mime_type);
 	if (SDL_strcmp(mime_type, "image/jpeg") == 0) {
 		puts("Providing jpeg");
-		fp = fopen("../assets/small_panda.jpeg", "rb");
-	} else {
+		if (cd->jpeg_data == NULL) {
+			puts("Reading file");
+			fp = fopen("../assets/small_panda.jpeg", "rb");
+			cd->jpeg_len = fread(buf, 1, BUF_SIZE, fp);
+			fclose(fp);
+
+			printf("Done: %zu\n", cd->jpeg_len);
+			cd->jpeg_data = SDL_malloc(cd->jpeg_len);
+			SDL_memcpy(cd->jpeg_data, buf, cd->jpeg_len);
+		}
+		*length = cd->jpeg_len;
+		data = cd->jpeg_data;
+	} else if (SDL_strcmp(mime_type, "image/bmp") == 0) {
 		puts("Providing bmp");
-		fp = fopen("../assets/small_panda.bmp", "rb");
+		if (cd->bmp_data == NULL) {
+			puts("Reading file");
+			fp = fopen("../assets/small_panda.bmp", "rb");
+			cd->bmp_len = fread(buf, 1, BUF_SIZE, fp);
+			fclose(fp);
+
+			printf("Done: %zu\n", cd->bmp_len);
+			cd->bmp_data = SDL_malloc(cd->bmp_len);
+			SDL_memcpy(cd->bmp_data, buf, cd->bmp_len);
+		}
+		*length = cd->bmp_len;
+		data = cd->bmp_data;
 	}
 
-	if (fp != NULL) {
-		*length = fread(buf, 1, BUF_SIZE, fp);
-		fclose(fp);
-
-		data = SDL_malloc(*length);
-		SDL_memcpy(data, buf, *length);
-	}
-
+	printf("Data length: %zu\n", *length);
 
 	return data;
 }
-
 #endif
 
 int main(int argc, char **argv)
@@ -120,11 +153,11 @@ int main(int argc, char **argv)
 				} break;
 				case SDL_EVENT_CLIPBOARD_CANCELLED:
 					puts("Clipboard cancelled");
-					SDL_free(e.clipboard.userdata);
+					destroy_clipboard_data(e.clipboard.userdata);
 					break;
 				case SDL_EVENT_KEY_DOWN:
 					if (e.key.keysym.sym == SDLK_c) {
-						SDL_SetClipboardData(callback_func, mime_types, SDL_malloc(100));
+						SDL_SetClipboardData(callback_func, 2, mime_types, SDL_calloc(1, sizeof(ClipboardData)));
 					} else if (e.key.keysym.sym == SDLK_t)
 						SDL_SetClipboardText("I'm batman");
 					else if (e.key.keysym.sym == SDLK_s)
@@ -156,19 +189,12 @@ int main(int argc, char **argv)
 		SDL_RenderRect(renderer, &r);
 
 		SDL_RenderPresent(renderer);
+		SDL_Delay(100);
 	}
-
-	void *data = NULL;
 
 clean:
 
-	data = SDL_GetClipboardUserdata();
-	if (data != NULL) {
-		puts("Cleaning up userdata");
-		SDL_free(data);
-	} else {
-		puts("No userdata to clean");
-	}
+	destroy_clipboard_data(SDL_GetClipboardUserdata());
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
