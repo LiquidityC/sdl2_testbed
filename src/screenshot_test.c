@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 	SDL_Event e;
 	SDL_bool running = SDL_TRUE;
 	while (running) {
-		SDL_bool take_screenshot = SDL_FALSE;
+		//SDL_bool take_screenshot = SDL_FALSE;
 		while (SDL_PollEvent(&e)) {
 			switch (e.type) {
 				case SDL_EVENT_QUIT:
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 					break;
 				case SDL_EVENT_KEY_DOWN:
 					if (e.key.keysym.sym == SDLK_p)
-						take_screenshot = SDL_TRUE;
+						//take_screenshot = SDL_TRUE;
 					break;
 			}
 		}
@@ -64,20 +64,20 @@ int main(int argc, char **argv)
 		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 		SDL_RenderRect(renderer, &r);
 
-		if (take_screenshot == SDL_TRUE) {
-			puts("Creating screenshot");
-			SDL_Rect vp;
-			SDL_RendererInfo info;
-			SDL_GetRendererInfo(renderer, &info);
-			SDL_assert(SDL_GetRenderViewport(renderer, &vp) == 0);
-			printf("Driver: %s, Viewport dimension: %dx%d\n", info.name, vp.w, vp.h);
-			SDL_Surface *sshot = SDL_CreateSurface(vp.w, vp.h, SDL_PIXELFORMAT_ARGB8888);
-			SDL_assert(SDL_RenderReadPixels(renderer, NULL, sshot->format->format, sshot->pixels, sshot->pitch) == 0);
-			SDL_assert(SDL_SaveBMP(sshot, "screenshot.bmp") == 0);
-			SDL_DestroySurface(sshot);
-		}
+		puts("Creating screenshot");
+		SDL_Rect vp;
+		SDL_RendererInfo info;
+		SDL_GetRendererInfo(renderer, &info);
+		SDL_assert(SDL_GetRenderViewport(renderer, &vp) == 0);
+		printf("Driver: %s, Viewport dimension: %dx%d\n", info.name, vp.w, vp.h);
+		SDL_Surface *sshot = SDL_CreateSurface(vp.w, vp.h, SDL_PIXELFORMAT_ARGB8888);
+		SDL_assert(SDL_RenderReadPixels(renderer, NULL, sshot->format->format, sshot->pixels, sshot->pitch) == 0);
+		SDL_assert(SDL_SaveBMP(sshot, "screenshot.bmp") == 0);
+		SDL_DestroySurface(sshot);
 
 		SDL_RenderPresent(renderer);
+
+		running = SDL_FALSE;
 	}
 
 clean:

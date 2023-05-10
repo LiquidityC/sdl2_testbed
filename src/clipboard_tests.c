@@ -24,7 +24,7 @@ static SDL_Texture *texture_from_clipboard(SDL_Renderer *renderer, SDL_FRect *si
 		SDL_DestroySurface(surface);
 		SDL_free(data);
 	} else {
-		printf("Size: %zu\n", length);
+		printf("[**] Size: %zu\n", length);
 	}
 
 	return texture;
@@ -62,30 +62,30 @@ void *callback_func(size_t *length, const char *mime_type, void *userdata)
 	*length = 0;
 	ClipboardData *cd = userdata;
 
-	printf("Mime-type: %s requested\n", mime_type);
+	printf("[**] Mime-type: %s requested\n", mime_type);
 	if (SDL_strcmp(mime_type, "image/jpeg") == 0) {
-		puts("Providing jpeg");
+		puts("[**] Providing jpeg");
 		if (cd->jpeg_data == NULL) {
-			puts("Reading file");
+			puts("[**] Reading file");
 			fp = fopen("../assets/small_panda.jpeg", "rb");
 			cd->jpeg_len = fread(buf, 1, BUF_SIZE, fp);
 			fclose(fp);
 
-			printf("Done: %zu\n", cd->jpeg_len);
+			printf("[**] Done: %zu\n", cd->jpeg_len);
 			cd->jpeg_data = SDL_malloc(cd->jpeg_len);
 			SDL_memcpy(cd->jpeg_data, buf, cd->jpeg_len);
 		}
 		*length = cd->jpeg_len;
 		data = cd->jpeg_data;
 	} else if (SDL_strcmp(mime_type, "image/bmp") == 0) {
-		puts("Providing bmp");
+		puts("[**] Providing bmp");
 		if (cd->bmp_data == NULL) {
-			puts("Reading file");
+			puts("[**] Reading file");
 			fp = fopen("../assets/small_panda.bmp", "rb");
 			cd->bmp_len = fread(buf, 1, BUF_SIZE, fp);
 			fclose(fp);
 
-			printf("Done: %zu\n", cd->bmp_len);
+			printf("[**] Done: %zu\n", cd->bmp_len);
 			cd->bmp_data = SDL_malloc(cd->bmp_len);
 			SDL_memcpy(cd->bmp_data, buf, cd->bmp_len);
 		}
@@ -93,7 +93,7 @@ void *callback_func(size_t *length, const char *mime_type, void *userdata)
 		data = cd->bmp_data;
 	}
 
-	printf("Data length: %zu\n", *length);
+	printf("[**] Data length: %zu\n", *length);
 
 	return data;
 }
@@ -107,20 +107,20 @@ int main(int argc, char **argv)
 	SDL_Renderer *renderer = NULL;
 
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-		printf("Err: %s\n", SDL_GetError());
+		printf("[**] Err: %s\n", SDL_GetError());
 		result = -1;
 		goto out;
 	}
 
 	SDL_CreateWindowAndRenderer(800, 600, 0, &window, &renderer);
 	if (!window) {
-		printf("Err: %s\n", SDL_GetError());
+		printf("[**] Err: %s\n", SDL_GetError());
 		result = -1;
 		goto clean;
 	}
 
 	if (!renderer) {
-		printf("Err: %s\n", SDL_GetError());
+		printf("[**] Err: %s\n", SDL_GetError());
 		result = -1;
 		goto clean;
 	}
@@ -138,30 +138,34 @@ int main(int argc, char **argv)
 					running = SDL_FALSE;
 					break;
 				case SDL_EVENT_CLIPBOARD_UPDATE: {
-					puts("Clipboard update");
+					puts("[**] Clipboard update");
 					update = true;
 					if (SDL_HasClipboardText()) {
 						char *content = SDL_GetClipboardText();
-						printf("Text: %s\n", content);
+						printf("[**] Text: %s\n", content);
 						SDL_free(content);
 					}
 					if (SDL_HasPrimarySelectionText()) {
 						char *content = SDL_GetPrimarySelectionText();
-						printf("Selection: %s\n", content);
+						printf("[**] Selection: %s\n", content);
 						SDL_free(content);
 					}
 				} break;
 				case SDL_EVENT_CLIPBOARD_CANCELLED:
-					puts("Clipboard cancelled");
+					puts("[**] Clipboard cancelled");
 					destroy_clipboard_data(e.clipboard.userdata);
 					break;
 				case SDL_EVENT_KEY_DOWN:
 					if (e.key.keysym.sym == SDLK_c) {
+						puts("[**] Setting clipboard data");
 						SDL_SetClipboardData(callback_func, 2, mime_types, SDL_calloc(1, sizeof(ClipboardData)));
-					} else if (e.key.keysym.sym == SDLK_t)
+					} else if (e.key.keysym.sym == SDLK_t) {
+						puts("[**] Setting clipboard text");
 						SDL_SetClipboardText("I'm batman");
-					else if (e.key.keysym.sym == SDLK_s)
+					} else if (e.key.keysym.sym == SDLK_s) {
+						puts("[**] Setting selection text");
 						SDL_SetPrimarySelectionText("I'm batman");
+					}
 					break;
 			}
 		}
@@ -171,7 +175,7 @@ int main(int argc, char **argv)
 
 		if (update) {
 			if (SDL_HasClipboardData("image/bmp")) {
-				printf("[%lu]: Clipboard contains image/bmp\n", SDL_GetTicks());
+				printf("[**] [%lu]: Clipboard contains image/bmp\n", SDL_GetTicks());
 				if (texture != NULL) {
 					SDL_DestroyTexture(texture);
 					texture = NULL;
